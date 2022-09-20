@@ -74,9 +74,9 @@ runs:
         helm ${{ inputs.action }} ${{ inputs.release-name }} ${{ inputs.chart-dir }} \
           --kubeconfig /tmp/kubeconfig \
           --namespace ${{ inputs.namespace }} \
-          ${{ inputs.create-namespace == '1' && '--create-namespace' || '' }} \
-          ${{ inputs.values-file != '' && '--values /tmp/values' || '' }} \
-          ${{ inputs.values != '' && '--set ' + inputs.values || '' }} \
-          ${{ inputs.atomic == '1' && '--atomic' || '' }} \
-          ${{ inputs.wait == '1' && '--wait' || '' }}
+          [[ "x${{ inputs.create-namespace }}" == "x" ]] && echo '--create-namespace' \
+          [[ "x${{ inputs.atomic }}" == "x1" ]] && echo '--atomic' \
+          [[ "x${{ inputs.wait }}" == "x1" ]] && echo '--wait' \
+          [[ "x${{ inputs.values-file }}" != "x" ]] && echo '--values /tmp/values' \
+          [[ "x${{ inputs.values }}" != "x" ]] && echo "--set ${{ inputs.values }}"
       shell: bash
