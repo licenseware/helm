@@ -1,0 +1,80 @@
+name: Helm
+author: meysam@licenseware.io
+description: Deploy Helm chart
+branding:
+  color: green
+  icon: package
+inputs:
+  action:
+    default: upgrade -i
+    description: "Allowed values: `upgrade -i`, `upgrade`, `install`, `uninstall`"
+    required: false
+  atomic:
+    default: "1"
+    description: Whether or not to pass `--atomic` to Helm
+    required: false
+  chart-dir:
+    default: helm
+    description: Relative path from the repository root directory
+    required: false
+  create-namespace:
+    default: "0"
+    description: Whether or not to pass `--create-namespace` to Helm
+    required: false
+  helm-version:
+    default: "3.9.4"
+    required: false
+  kubeconfig:
+    description: 'A JSON/YAML encoded string e.g. {"key": "value"}'
+    required: true
+  namespace:
+    default: default
+    required: false
+  release-name:
+    default: ${{ github.event.repository.name }}
+    required: false
+  values:
+    default: ""
+    description: A comma separated list of values e.g. "key1=value1,key2=value2"
+    required: false
+  values-file:
+    default: ""
+    description: 'A JSON/YAML encoded string e.g. {"key": "value"}'
+    required: false
+  wait:
+    default: "1"
+    description: Whether or not to pass `--wait` to Helm
+    required: false
+runs:
+  using: composite
+  steps:
+    - env:
+        DESIRED_VERSION: ${{ inputs.helm-version }}
+      name: Install Helm ${{ inputs.helm-version }}
+      run: curl -fsSL https://git.io/get_helm.sh | bash
+      shell: bash
+    - name: Build Helm dependencies
+      run: helm dependency build ${{ inputs.chart-dir }}
+      shell: bash
+    - if: inputs.values-file != ''
+      name: Prepare values file
+      run: |
+        cat << 'EOF' > /tmp/values
+        ${{ inputs.values-file }}
+        EOF
+    - name: Prepare KUBECONFIG
+      run: |
+        cat << 'EOF' > /tmp/kubeconfig
+        ${{ inputs.kubeconfig }}
+        EOF
+    - name: Deploy with Helm
+      run: |
+        helm ${{ inputs.action }} ${{ inputs.release-name }} ${{ inputs.chart-dir }} \
+          --kubeconfig /tmp/kubeconfig \
+          --namespace ${{ inputs.namespace }} \
+          ${{ inputs.create-namespace == '1' && '--create-namespace' || '' }} \
+          ${{ inputs.values-file != '' && '--values /tmp/values' || '' }} \
+          ${{ inputs.values != '' && '--set ' + inputs.values || '' }} \
+          ${{ inputs.atomic == '1' && '--atomic' || '' }} \
+          ${{ inputs.wait == '1' && '--wait' || '' }}
+      shell: bash
