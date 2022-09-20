@@ -1,9 +1,9 @@
-name: Helm
+name: helm-cli
 author: meysam@licenseware.io
-description: Deploy Helm chart
 branding:
   color: green
   icon: package
+description: Deploy Helm chart
 inputs:
   action:
     default: upgrade -i
@@ -22,7 +22,7 @@ inputs:
     description: Whether or not to pass `--create-namespace` to Helm
     required: false
   helm-version:
-    default: "3.9.4"
+    default: 3.9.4
     required: false
   kubeconfig:
     description: 'A JSON/YAML encoded string e.g. {"key": "value"}'
@@ -62,11 +62,13 @@ runs:
         cat << 'EOF' > /tmp/values
         ${{ inputs.values-file }}
         EOF
+      shell: bash
     - name: Prepare KUBECONFIG
       run: |
         cat << 'EOF' > /tmp/kubeconfig
         ${{ inputs.kubeconfig }}
         EOF
+      shell: bash
     - name: Deploy with Helm
       run: |
         helm ${{ inputs.action }} ${{ inputs.release-name }} ${{ inputs.chart-dir }} \

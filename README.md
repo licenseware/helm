@@ -3,7 +3,7 @@
 ## Usage
 
 ```yaml
-      - uses: licenseware/helm@v1
+      - uses: licenseware/helm-cli@v1
         with:
           # required 👇
           kubeconfig: ${{ secrets.KUBECONFIG_FILE }}
