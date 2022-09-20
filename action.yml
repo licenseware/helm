@@ -54,7 +54,7 @@ runs:
       run: curl -fsSL https://git.io/get_helm.sh | bash
       shell: bash
     - name: Build Helm dependencies
-      run: helm dependency build ${{ inputs.chart-dir }}
+      run: helm dependency update ${{ inputs.chart-dir }}
       shell: bash
     - if: inputs.values-file != ''
       name: Prepare values file
