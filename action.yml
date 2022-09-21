@@ -7,7 +7,7 @@ description: Deploy Helm chart
 inputs:
   action:
     default: upgrade -i
-    description: "Allowed values: `upgrade -i`, `upgrade`, `install`, `uninstall`"
+    description: upgrade -i, upgrade, install, uninstall, etc.
     required: false
   atomic:
     default: "1"
