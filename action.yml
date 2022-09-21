@@ -3,7 +3,7 @@ author: meysam@licenseware.io
 branding:
   color: green
   icon: package
-description: Deploy Helm chart
+description: Deploy Helm chart in a GitHub action
 inputs:
   action:
     default: upgrade -i
@@ -33,6 +33,10 @@ inputs:
   release-name:
     default: ${{ github.event.repository.name }}
     required: false
+  update-dependencies:
+    default: "1"
+    description: Whether or not to run `helm dependency update` before deployment
+    required: false
   values:
     default: ""
     description: A comma separated list of values e.g. "key1=value1,key2=value2"
@@ -53,7 +57,8 @@ runs:
       name: Install Helm ${{ inputs.helm-version }}
       run: curl -fsSL https://git.io/get_helm.sh | bash
       shell: bash
-    - name: Build Helm dependencies
+    - if: inputs.update-dependencies == '1'
+      name: Build Helm dependencies
       run: helm dependency update ${{ inputs.chart-dir }}
       shell: bash
     - if: inputs.values-file != ''
@@ -62,12 +67,14 @@ runs:
         cat << 'EOF' > /tmp/values
         ${{ inputs.values-file }}
         EOF
+        chmod 600 /tmp/values
       shell: bash
     - name: Prepare KUBECONFIG
       run: |
         cat << 'EOF' > /tmp/kubeconfig
         ${{ inputs.kubeconfig }}
         EOF
+        chmod 600 /tmp/kubeconfig
       shell: bash
     - name: Deploy with Helm
       run: |
