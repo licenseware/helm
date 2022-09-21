@@ -6,7 +6,7 @@
       - uses: licenseware/helm@v1
         with:
           # required 👇
-          kubeconfig: ${{ secrets.KUBECONFIG_FILE }}
+          kubeconfig: ${{ secrets.KUBECONFIG_FILE }} # JSON/YAML encoded string
           # optionals 👇
           action: upgrade -i # upgrade -i, install, uninstall, etc.
           atomic: "1"
