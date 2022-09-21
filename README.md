@@ -3,7 +3,7 @@
 ## Usage
 
 ```yaml
-      - uses: licenseware/helm@v1
+      - uses: licenseware/helm@v1.1
         with:
           # required 👇
           kubeconfig: ${{ secrets.KUBECONFIG_FILE }} # JSON/YAML encoded string
@@ -15,6 +15,7 @@
           helm-version: "v3.9.4" # https://github.com/helm/helm/releases
           namespace: default
           release-name: ${{ github.event.repository.name }}
+          update-dependencies: "1" # helm dep update
           values: image.tag=${{ github.sha }} # comma separated key=value pairs
           values-file: ${{ secrets.HELM_VALUES }} # JSON/YAML encoded string
           wait: "1"
