@@ -6,7 +6,7 @@
       - uses: licenseware/helm@v1.2
         with:
           kubeconfig: ${{ secrets.KUBECONFIG_FILE }} # JSON/YAML encoded string
-          kubeconfig-file: /tmp/kubeconfig # mutually exclusive with `kubeconfig`
+          kubeconfig-filepath: /tmp/kubeconfig # mutually exclusive with `kubeconfig`
           action: upgrade -i # upgrade -i, install, uninstall, etc.
           atomic: "1"
           build-dependencies: "1" # helm dep build
