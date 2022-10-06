@@ -13,6 +13,10 @@ inputs:
     default: "1"
     description: Whether or not to pass `--atomic` to Helm
     required: false
+  build-dependencies:
+    default: "1"
+    description: Whether or not to run `helm dependency build` before deployment
+    required: false
   chart-dir:
     default: helm
     description: Relative path from the repository root directory
@@ -34,7 +38,7 @@ inputs:
     default: ${{ github.event.repository.name }}
     required: false
   update-dependencies:
-    default: "1"
+    default: "0"
     description: Whether or not to run `helm dependency update` before deployment
     required: false
   values:
@@ -44,6 +48,10 @@ inputs:
   values-file:
     default: ""
     description: 'A JSON/YAML encoded string e.g. {"key": "value"}'
+    required: false
+  values-filepath:
+    default: ""
+    description: A relative/absolute path to a file containing the YAML/JSON values
     required: false
   wait:
     default: "1"
@@ -58,16 +66,20 @@ runs:
       run: curl -fsSL https://git.io/get_helm.sh | bash
       shell: bash
     - if: inputs.update-dependencies == '1'
+      name: Update Helm dependencies
+      run: helm dep update ${{ inputs.chart-dir }} --skip-refresh
+      shell: bash
+    - if: inputs.build-dependencies == '1'
       name: Build Helm dependencies
-      run: helm dependency update ${{ inputs.chart-dir }}
+      run: helm dep build ${{ inputs.chart-dir }} --skip-refresh
       shell: bash
     - if: inputs.values-file != ''
       name: Prepare values file
       run: |
-        cat << 'EOF' > /tmp/values
+        cat << 'EOF' > ${{ github.run_id }}
         ${{ inputs.values-file }}
         EOF
-        chmod 600 /tmp/values
+        chmod 600 ${{ github.run_id }}
       shell: bash
     - name: Prepare KUBECONFIG
       run: |
@@ -84,6 +96,7 @@ runs:
           $([[ "${{ inputs.create-namespace }}" == "1" ]] && echo '--create-namespace') \
           $([[ "${{ inputs.atomic }}" == "1" ]] && echo '--atomic') \
           $([[ "${{ inputs.wait }}" == "1" ]] && echo '--wait') \
-          $([[ "${{ inputs.values-file }}" != "" ]] && echo '--values /tmp/values') \
+          $([[ "${{ inputs.values-file }}" != "" ]] && echo "--values ${{ github.run_id }}") \
+          $([[ "${{ inputs.values-filepath }}" != "" ]] && echo "--values ${{ inputs.values-filepath }}") \
           $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}")
       shell: bash
