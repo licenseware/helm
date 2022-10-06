@@ -14,7 +14,7 @@ inputs:
     description: Whether or not to pass `--atomic` to Helm
     required: false
   build-dependencies:
-    default: "1"
+    default: "0"
     description: Whether or not to run `helm dependency build` before deployment
     required: false
   chart-dir:
@@ -38,7 +38,7 @@ inputs:
     default: ${{ github.event.repository.name }}
     required: false
   update-dependencies:
-    default: "0"
+    default: "1"
     description: Whether or not to run `helm dependency update` before deployment
     required: false
   values:
@@ -67,11 +67,11 @@ runs:
       shell: bash
     - if: inputs.update-dependencies == '1'
       name: Update Helm dependencies
-      run: helm dep update ${{ inputs.chart-dir }} --skip-refresh
+      run: helm dep update ${{ inputs.chart-dir }}
       shell: bash
     - if: inputs.build-dependencies == '1'
       name: Build Helm dependencies
-      run: helm dep build ${{ inputs.chart-dir }} --skip-refresh
+      run: helm dep build ${{ inputs.chart-dir }}
       shell: bash
     - if: inputs.values-file != ''
       name: Prepare values file
