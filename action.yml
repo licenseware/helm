@@ -29,9 +29,9 @@ inputs:
     default: v3.9.4
     required: false
   kubeconfig:
-    description: 'A JSON/YAML encoded string e.g. {"key": "value"}. Mutually exclusive with `kubeconfig-file`'
+    description: 'A JSON/YAML encoded string e.g. {"key": "value"}. Mutually exclusive with `kubeconfig-filepath`'
     required: false
-  kubeconfig-file:
+  kubeconfig-filepath:
     description: Path to kubeconfig file. Mutually exclusive with `kubeconfig`
     required: false
   namespace:
@@ -63,17 +63,17 @@ inputs:
 runs:
   using: composite
   steps:
-    - if: inputs.kubeconfig == '' && inputs.kubeconfig-file == ''
+    - if: inputs.kubeconfig == '' && inputs.kubeconfig-filepath == ''
       name: Error - no kubeconfig provided
       shell: bash
       run: |
-        echo "Error: You must provide either `kubeconfig` or `kubeconfig-file`"
+        echo "Error: You must provide either `kubeconfig` or `kubeconfig-filepath`"
         exit 1
-    - if: inputs.kubeconfig != '' && inputs.kubeconfig-file != ''
-      name: Error - both kubeconfig and kubeconfig-file provided
+    - if: inputs.kubeconfig != '' && inputs.kubeconfig-filepath != ''
+      name: Error - both kubeconfig and kubeconfig-filepath provided
       shell: bash
       run: |
-        echo "Error: You must provide either `kubeconfig` or `kubeconfig-file` but not both"
+        echo "Error: You must provide either `kubeconfig` or `kubeconfig-filepath` but not both"
         exit 1
     - env:
         DESIRED_VERSION: ${{ inputs.helm-version }}
@@ -97,7 +97,7 @@ runs:
         chmod 600 ${{ github.run_id }}
       shell: bash
     - name: Prepare KUBECONFIG
-      if: inputs.kubeconfig != '' && inputs.kubeconfig-file != ''
+      if: inputs.kubeconfig != '' && inputs.kubeconfig-filepath != ''
       run: |
         cat << 'EOF' > /tmp/kubeconfig
         ${{ inputs.kubeconfig }}
@@ -107,7 +107,7 @@ runs:
     - name: Deploy with Helm
       run: |
         helm ${{ inputs.action }} ${{ inputs.release-name }} ${{ inputs.chart-dir }} \
-          --kubeconfig ${{ inputs.kubeconfig-file || '/tmp/kubeconfig' }} \
+          --kubeconfig ${{ inputs.kubeconfig-filepath || '/tmp/kubeconfig' }} \
           --namespace ${{ inputs.namespace }} \
           $([[ "${{ inputs.create-namespace }}" == "1" ]] && echo '--create-namespace') \
           $([[ "${{ inputs.atomic }}" == "1" ]] && echo '--atomic') \
