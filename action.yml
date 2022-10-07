@@ -98,6 +98,7 @@ runs:
       run: |
         echo "::set-output name=KUBECONFIG_FILEPATH::${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-kubeconfig"
         echo "::set-output name=VALUES_FILEPATH::${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-values"
+      shell: bash
     - if: inputs.values-file != ''
       name: Prepare values file
       run: |
