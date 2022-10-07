@@ -21,6 +21,10 @@ inputs:
     default: helm
     description: Relative path from the repository root directory
     required: false
+  cleanup:
+    default: "1"
+    description: Whether or not to delete all the kubeconfig & values files after deployment
+    required: false
   create-namespace:
     default: "0"
     description: Whether or not to pass `--create-namespace` to Helm
@@ -65,16 +69,16 @@ runs:
   steps:
     - if: inputs.kubeconfig == '' && inputs.kubeconfig-filepath == ''
       name: Error - no kubeconfig provided
-      shell: bash
       run: |
         echo "Error: You must provide either `kubeconfig` or `kubeconfig-filepath`"
         exit 1
+      shell: bash
     - if: inputs.kubeconfig != '' && inputs.kubeconfig-filepath != ''
       name: Error - both kubeconfig and kubeconfig-filepath provided
-      shell: bash
       run: |
         echo "Error: You must provide either `kubeconfig` or `kubeconfig-filepath` but not both"
         exit 1
+      shell: bash
     - env:
         DESIRED_VERSION: ${{ inputs.helm-version }}
       name: Install Helm ${{ inputs.helm-version }}
@@ -88,26 +92,32 @@ runs:
       name: Build Helm dependencies
       run: helm dep build ${{ inputs.chart-dir }}
       shell: bash
+    - id: generate-random-filepath
+      if: inputs.kubeconfig != '' || inputs.values-file != ''
+      name: Generate kubeconfig & values random filepath
+      run: |
+        echo "::set-output name=KUBECONFIG_FILEPATH::${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-kubeconfig"
+        echo "::set-output name=VALUES_FILEPATH::${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-values"
     - if: inputs.values-file != ''
       name: Prepare values file
       run: |
-        cat << 'EOF' > ${{ github.run_id }}
+        cat << 'EOF' > ${{ steps.generate-random-filepath.outputs.VALUES_FILEPATH }}
         ${{ inputs.values-file }}
         EOF
-        chmod 600 ${{ github.run_id }}
+        chmod 600 ${{ steps.generate-random-filepath.outputs.VALUES_FILEPATH }}
       shell: bash
-    - name: Prepare KUBECONFIG
-      if: inputs.kubeconfig != '' && inputs.kubeconfig-filepath != ''
+    - if: inputs.kubeconfig != ''
+      name: Prepare KUBECONFIG
       run: |
-        cat << 'EOF' > /tmp/kubeconfig
+        cat << 'EOF' > ${{ steps.generate-random-filepath.outputs.KUBECONFIG_FILEPATH }}
         ${{ inputs.kubeconfig }}
         EOF
-        chmod 600 /tmp/kubeconfig
+        chmod 600 ${{ steps.generate-random-filepath.outputs.KUBECONFIG_FILEPATH }}
       shell: bash
     - name: Deploy with Helm
       run: |
         helm ${{ inputs.action }} ${{ inputs.release-name }} ${{ inputs.chart-dir }} \
-          --kubeconfig ${{ inputs.kubeconfig-filepath || '/tmp/kubeconfig' }} \
+          --kubeconfig ${{ inputs.kubeconfig-filepath || steps.generate-random-filepath.outputs.KUBECONFIG_FILEPATH }} \
           --namespace ${{ inputs.namespace }} \
           $([[ "${{ inputs.create-namespace }}" == "1" ]] && echo '--create-namespace') \
           $([[ "${{ inputs.atomic }}" == "1" ]] && echo '--atomic') \
@@ -115,4 +125,12 @@ runs:
           $([[ "${{ inputs.values-file }}" != "" ]] && echo "--values ${{ github.run_id }}") \
           $([[ "${{ inputs.values-filepath }}" != "" ]] && echo "--values ${{ inputs.values-filepath }}") \
           $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}")
+      shell: bash
+    - if: always() && inputs.cleanup == '1'
+      name: Cleanup
+      run: |
+        rm -f ${{ steps.generate-random-filepath.outputs.KUBECONFIG_FILEPATH }} \
+          ${{ steps.generate-random-filepath.outputs.VALUES_FILEPATH }} \
+          ${{ inputs.values-filepath }} \
+          ${{ inputs.kubeconfig-filepath }}
       shell: bash
