@@ -30,7 +30,7 @@ inputs:
     description: Whether or not to pass `--create-namespace` to Helm
     required: false
   helm-version:
-    default: v3.9.4
+    default: v3.10.0
     required: false
   kubeconfig:
     description: 'A JSON/YAML encoded string e.g. {"key": "value"}. Mutually exclusive with `kubeconfig-filepath`'
