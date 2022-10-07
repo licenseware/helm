@@ -3,7 +3,7 @@
 ## Usage
 
 ```yaml
-      - uses: licenseware/helm@v1.3
+      - uses: licenseware/helm@v1.3.1
         with:
           kubeconfig: ${{ secrets.KUBECONFIG_FILE }} # JSON/YAML encoded string
           kubeconfig-filepath: /tmp/kubeconfig # mutually exclusive with `kubeconfig`
@@ -13,7 +13,7 @@
           chart-dir: ./helm
           cleanup: "1" # delete all the files i.e. kubeconfig & values
           create-namespace: "0"
-          helm-version: "v3.9.4" # https://github.com/helm/helm/releases
+          helm-version: "v3.10.0" # https://github.com/helm/helm/releases
           namespace: default
           release-name: ${{ github.event.repository.name }}
           update-dependencies: "0" # helm dep update
