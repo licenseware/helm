@@ -133,4 +133,5 @@ runs:
           ${{ steps.generate-random-filepath.outputs.VALUES_FILEPATH }} \
           ${{ inputs.values-filepath }} \
           ${{ inputs.kubeconfig-filepath }}
+        echo "Cleanup complete"
       shell: bash
