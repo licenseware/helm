@@ -21,6 +21,10 @@ inputs:
     default: helm
     description: Relative path from the repository root directory
     required: false
+  chmod-kubeconfig:
+    default: "1"
+    description: Whether or not to change the access for the kubeconfig file to 600
+    required: false
   cleanup:
     default: "1"
     description: Whether or not to delete all the kubeconfig & values files after deployment
@@ -30,7 +34,7 @@ inputs:
     description: Whether or not to pass `--create-namespace` to Helm
     required: false
   helm-version:
-    default: v3.10.0
+    default: v3.10.1
     required: false
   kubeconfig:
     description: 'A JSON/YAML encoded string e.g. {"key": "value"}. Mutually exclusive with `kubeconfig-filepath`'
@@ -114,6 +118,11 @@ runs:
         ${{ inputs.kubeconfig }}
         EOF
         chmod 600 ${{ steps.generate-random-filepath.outputs.KUBECONFIG_FILEPATH }}
+      shell: bash
+    - if: inputs.chmod-kubeconfig == '1'
+      name: Change access for KUBECONFIG
+      run: |
+        [[ -f ${{ inputs.kubeconfig-filepath }} ]] && chmod 600 ${{ inputs.kubeconfig-filepath }}
       shell: bash
     - name: Deploy with Helm
       run: |
