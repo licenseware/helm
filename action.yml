@@ -64,6 +64,10 @@ inputs:
     default: ""
     description: A relative/absolute path to a file containing the YAML/JSON values
     required: false
+  values-string:
+    default: ""
+    description: A comma separated list of values e.g. "key1=value1,key2=value2"
+    required: false
   wait:
     default: "1"
     description: Whether or not to pass `--wait` to Helm
@@ -100,8 +104,8 @@ runs:
       if: inputs.kubeconfig != '' || inputs.values-file != ''
       name: Generate kubeconfig & values random filepath
       run: |
-        echo "::set-output name=KUBECONFIG_FILEPATH::${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-kubeconfig"
-        echo "::set-output name=VALUES_FILEPATH::${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-values"
+        echo "KUBECONFIG_FILEPATH=${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-kubeconfig" >> $GITHUB_OUTPUT
+        echo "VALUES_FILEPATH=${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-values" >> $GITHUB_OUTPUT
       shell: bash
     - if: inputs.values-file != ''
       name: Prepare values file
