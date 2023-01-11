@@ -19,6 +19,7 @@
           release-name: ${{ github.event.repository.name }}
           update-dependencies: "1" # helm dep update
           values: image.tag=${{ github.sha }} # comma separated key=value pairs
+          values-string: key1=value1,key2=value2 # comma separated key=value pairs
           values-file: ${{ secrets.HELM_VALUES }} # JSON/YAML encoded string
           values-filepath: /tmp/values.yml
           wait: "1"
