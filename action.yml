@@ -134,7 +134,8 @@ runs:
           $([[ "${{ inputs.wait }}" == "1" ]] && echo '--wait') \
           $([[ "${{ inputs.values-file }}" != "" ]] && echo "--values ${{ github.run_id }}") \
           $([[ "${{ inputs.values-filepath }}" != "" ]] && echo "--values ${{ inputs.values-filepath }}") \
-          $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}")
+          $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}") \
+          $([[ "${{ inputs.values-string }}" != "" ]] && echo "--set-string ${{ inputs.values-string }}")
       shell: bash
     - if: always() && inputs.cleanup == '1'
       name: Cleanup
