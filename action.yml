@@ -29,6 +29,10 @@ inputs:
     default: "1"
     description: Whether or not to delete all the kubeconfig & values files after deployment
     required: false
+  cleanup-on-fail:
+    default: "1"
+    description: Whether or not to delete all the newly created resources on failure
+    required: false
   create-namespace:
     default: "0"
     description: Whether or not to pass `--create-namespace` to Helm
@@ -48,6 +52,9 @@ inputs:
   release-name:
     default: ${{ github.event.repository.name }}
     required: false
+  timeout:
+    default: 10m
+    description: The maximum amount of time to wait for the deployment to complete
   update-dependencies:
     default: "1"
     description: Whether or not to run `helm dependency update` before deployment
@@ -63,6 +70,10 @@ inputs:
   values-filepath:
     default: ""
     description: A relative/absolute path to a file containing the YAML/JSON values
+    required: false
+  values-string:
+    default: ""
+    description: A comma separated list of values e.g. "key1=value1,key2=value2"
     required: false
   wait:
     default: "1"
@@ -104,8 +115,8 @@ runs:
       if: inputs.kubeconfig != '' || inputs.values-file != ''
       name: Generate kubeconfig & values random filepath
       run: |
-        echo "::set-output name=KUBECONFIG_FILEPATH::${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-kubeconfig"
-        echo "::set-output name=VALUES_FILEPATH::${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-values"
+        echo "KUBECONFIG_FILEPATH=${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-kubeconfig" >> $GITHUB_OUTPUT
+        echo "VALUES_FILEPATH=${{ github.run_id }}-${{ github.run_attempt }}-${RANDOM}-values" >> $GITHUB_OUTPUT
       shell: bash
     - if: inputs.values-file != ''
       name: Prepare values file
@@ -133,13 +144,16 @@ runs:
         helm ${{ inputs.action }} ${{ inputs.release-name }} ${{ inputs.chart-dir }} \
           --kubeconfig ${{ inputs.kubeconfig-filepath || steps.generate-random-filepath.outputs.KUBECONFIG_FILEPATH }} \
           --namespace ${{ inputs.namespace }} \
+          --timeout ${{ inputs.timeout }} \
           $([[ "${{ inputs.create-namespace }}" == "1" ]] && echo '--create-namespace') \
           $([[ "${{ inputs.atomic }}" == "1" ]] && echo '--atomic') \
           $([[ "${{ inputs.wait }}" == "1" ]] && echo '--wait') \
           $([[ "${{ inputs.wait-for-jobs }}" == "1" ]] && echo '--wait-for-jobs' || echo '--wait-for-jobs=false') \
+          $([[ "${{ inputs.cleanup-on-fail }}" == "1" ]] && echo '--cleanup-on-fail') \
           $([[ "${{ inputs.values-file }}" != "" ]] && echo "--values ${{ github.run_id }}") \
           $([[ "${{ inputs.values-filepath }}" != "" ]] && echo "--values ${{ inputs.values-filepath }}") \
-          $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}")
+          $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}") \
+          $([[ "${{ inputs.values-string }}" != "" ]] && echo "--set-string ${{ inputs.values-string }}")
       shell: bash
     - if: always() && inputs.cleanup == '1'
       name: Cleanup
