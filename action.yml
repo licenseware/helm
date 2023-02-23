@@ -68,6 +68,10 @@ inputs:
     default: "1"
     description: Whether or not to pass `--wait` to Helm
     required: false
+  wait-for-jobs:
+    default: "1"
+    description: Whether or not to pass `--wait-for-jobs` to Helm
+    required: false
 runs:
   using: composite
   steps:
@@ -132,6 +136,7 @@ runs:
           $([[ "${{ inputs.create-namespace }}" == "1" ]] && echo '--create-namespace') \
           $([[ "${{ inputs.atomic }}" == "1" ]] && echo '--atomic') \
           $([[ "${{ inputs.wait }}" == "1" ]] && echo '--wait') \
+          $([[ "${{ inputs.wait-for-jobs }}" == "1" ]] && echo '--wait-for-jobs' || echo '--wait-for-jobs=false') \
           $([[ "${{ inputs.values-file }}" != "" ]] && echo "--values ${{ github.run_id }}") \
           $([[ "${{ inputs.values-filepath }}" != "" ]] && echo "--values ${{ inputs.values-filepath }}") \
           $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}")
