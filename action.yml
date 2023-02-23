@@ -150,6 +150,7 @@ runs:
           $([[ "${{ inputs.wait }}" == "1" ]] && echo '--wait') \
           $([[ "${{ inputs.wait-for-jobs }}" == "1" ]] && echo '--wait-for-jobs' || echo '--wait-for-jobs=false') \
           $([[ "${{ inputs.cleanup-on-fail }}" == "1" ]] && echo '--cleanup-on-fail') \
+          $([[ "${{ inputs.wait-for-jobs }}" == "1" ]] && echo '--wait-for-jobs' || echo '--wait-for-jobs=false') \
           $([[ "${{ inputs.values-file }}" != "" ]] && echo "--values ${{ github.run_id }}") \
           $([[ "${{ inputs.values-filepath }}" != "" ]] && echo "--values ${{ inputs.values-filepath }}") \
           $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}") \
