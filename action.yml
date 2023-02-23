@@ -37,6 +37,10 @@ inputs:
     default: "0"
     description: Whether or not to pass `--create-namespace` to Helm
     required: false
+  force:
+    default: "0"
+    description: Whether or not to pass `--force` to Helm
+    required: false
   helm-version:
     default: v3.10.1
     required: false
@@ -80,7 +84,7 @@ inputs:
     description: Whether or not to pass `--wait` to Helm
     required: false
   wait-for-jobs:
-    default: "1"
+    default: "0"
     description: Whether or not to pass `--wait-for-jobs` to Helm
     required: false
 runs:
@@ -145,16 +149,16 @@ runs:
           --kubeconfig ${{ inputs.kubeconfig-filepath || steps.generate-random-filepath.outputs.KUBECONFIG_FILEPATH }} \
           --namespace ${{ inputs.namespace }} \
           --timeout ${{ inputs.timeout }} \
-          $([[ "${{ inputs.create-namespace }}" == "1" ]] && echo '--create-namespace') \
           $([[ "${{ inputs.atomic }}" == "1" ]] && echo '--atomic') \
-          $([[ "${{ inputs.wait }}" == "1" ]] && echo '--wait') \
-          $([[ "${{ inputs.wait-for-jobs }}" == "1" ]] && echo '--wait-for-jobs' || echo '--wait-for-jobs=false') \
           $([[ "${{ inputs.cleanup-on-fail }}" == "1" ]] && echo '--cleanup-on-fail') \
-          $([[ "${{ inputs.wait-for-jobs }}" == "1" ]] && echo '--wait-for-jobs' || echo '--wait-for-jobs=false') \
+          $([[ "${{ inputs.create-namespace }}" == "1" ]] && echo '--create-namespace') \
+          $([[ "${{ inputs.force }}" == "1" ]] && echo '--force') \
+          $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}") \
           $([[ "${{ inputs.values-file }}" != "" ]] && echo "--values ${{ github.run_id }}") \
           $([[ "${{ inputs.values-filepath }}" != "" ]] && echo "--values ${{ inputs.values-filepath }}") \
-          $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}") \
-          $([[ "${{ inputs.values-string }}" != "" ]] && echo "--set-string ${{ inputs.values-string }}")
+          $([[ "${{ inputs.values-string }}" != "" ]] && echo "--set-string ${{ inputs.values-string }}") \
+          $([[ "${{ inputs.wait }}" == "1" ]] && echo '--wait') \
+          $([[ "${{ inputs.wait-for-jobs }}" == "1" ]] && echo '--wait-for-jobs')
       shell: bash
     - if: always() && inputs.cleanup == '1'
       name: Cleanup
