@@ -29,6 +29,10 @@ inputs:
     default: "1"
     description: Whether or not to delete all the kubeconfig & values files after deployment
     required: false
+  cleanup-on-fail:
+    default: "1"
+    description: Whether or not to delete all the newly created resources on failure
+    required: false
   create-namespace:
     default: "0"
     description: Whether or not to pass `--create-namespace` to Helm
@@ -48,6 +52,9 @@ inputs:
   release-name:
     default: ${{ github.event.repository.name }}
     required: false
+  timeout:
+    default: 10m
+    description: The maximum amount of time to wait for the deployment to complete
   update-dependencies:
     default: "1"
     description: Whether or not to run `helm dependency update` before deployment
@@ -133,9 +140,11 @@ runs:
         helm ${{ inputs.action }} ${{ inputs.release-name }} ${{ inputs.chart-dir }} \
           --kubeconfig ${{ inputs.kubeconfig-filepath || steps.generate-random-filepath.outputs.KUBECONFIG_FILEPATH }} \
           --namespace ${{ inputs.namespace }} \
+          --timeout ${{ inputs.timeout }} \
           $([[ "${{ inputs.create-namespace }}" == "1" ]] && echo '--create-namespace') \
           $([[ "${{ inputs.atomic }}" == "1" ]] && echo '--atomic') \
           $([[ "${{ inputs.wait }}" == "1" ]] && echo '--wait') \
+          $([[ "${{ inputs.cleanup-on-fail }}" == "1" ]] && echo '--cleanup-on-fail') \
           $([[ "${{ inputs.values-file }}" != "" ]] && echo "--values ${{ github.run_id }}") \
           $([[ "${{ inputs.values-filepath }}" != "" ]] && echo "--values ${{ inputs.values-filepath }}") \
           $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}") \

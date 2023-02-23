@@ -13,10 +13,12 @@
           chart-dir: ./helm
           chmod-kubeconfig: "1" # `chmod 600 kubeconfig-filepath`
           cleanup: "1" # delete all the files i.e. kubeconfig & values
+          cleanup-on-fail: "1" # delete newly created resources on failure
           create-namespace: "0"
           helm-version: "v3.10.1" # https://github.com/helm/helm/releases
           namespace: default
           release-name: ${{ github.event.repository.name }}
+          timeout: 10m
           update-dependencies: "1" # helm dep update
           values: image.tag=${{ github.sha }} # comma separated key=value pairs
           values-string: key1=value1,key2=value2 # comma separated key=value pairs
