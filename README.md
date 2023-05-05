@@ -18,6 +18,7 @@
           helm-version: "v3.10.1" # https://github.com/helm/helm/releases
           namespace: default
           release-name: ${{ github.event.repository.name }}
+          reuse-values: "0" # possible values: [0, 1] default: 0
           timeout: 10m
           update-dependencies: "1" # helm dep update
           values: image.tag=${{ github.sha }} # comma separated key=value pairs
