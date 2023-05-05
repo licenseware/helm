@@ -42,7 +42,7 @@ inputs:
     description: Whether or not to pass `--force` to Helm
     required: false
   helm-version:
-    default: v3.10.1
+    default: v3.11.3
     required: false
   kubeconfig:
     description: 'A JSON/YAML encoded string e.g. {"key": "value"}. Mutually exclusive with `kubeconfig-filepath`'
@@ -55,6 +55,10 @@ inputs:
     required: false
   release-name:
     default: ${{ github.event.repository.name }}
+    required: false
+  reuse-values:
+    default: "0"
+    description: Whether or not to pass `--reuse-values` to Helm
     required: false
   timeout:
     default: 10m
@@ -153,6 +157,7 @@ runs:
           $([[ "${{ inputs.cleanup-on-fail }}" == "1" ]] && echo '--cleanup-on-fail') \
           $([[ "${{ inputs.create-namespace }}" == "1" ]] && echo '--create-namespace') \
           $([[ "${{ inputs.force }}" == "1" ]] && echo '--force') \
+          $([[ "${{ inputs.reuse-values }}" == "1" ]] && echo '--reuse-values') \
           $([[ "${{ inputs.values }}" != "" ]] && echo "--set ${{ inputs.values }}") \
           $([[ "${{ inputs.values-file }}" != "" ]] && echo "--values ${{ github.run_id }}") \
           $([[ "${{ inputs.values-filepath }}" != "" ]] && echo "--values ${{ inputs.values-filepath }}") \
